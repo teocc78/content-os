@@ -1,17 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+
+const navLinks = [
+  { href: '/', label: 'Dashboard', icon: '📊' },
+  { href: '/library', label: 'Library', icon: '📹' },
+  { href: '/grade', label: 'Grade', icon: '⭐' },
+  { href: '/chat', label: 'Chat', icon: '💬' },
+];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
   const [videoCount, setVideoCount] = useState<number | null>(null);
 
   useEffect(() => {
-    // Fetch video count
     async function getVideoCount() {
       try {
         const res = await fetch('/api/videos/count');
@@ -19,86 +23,85 @@ export function Sidebar() {
           const data = await res.json();
           setVideoCount(data.count);
         }
-      } catch (err) {
-        console.error('Failed to fetch video count:', err);
+      } catch {
+        // silently fail — count is non-critical
       }
     }
     getVideoCount();
   }, []);
 
-  const navLinks = [
-    { href: '/', label: 'Dashboard', icon: '📊' },
-    { href: '/library', label: 'Library', icon: '📹' },
-    { href: '/grade', label: 'Grade', icon: '⭐' },
-    { href: '/chat', label: 'Chat', icon: '💬' },
-  ];
-
-  const isActive = (href: string) => {
-    if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
-  };
+  const isActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname.startsWith(href);
 
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* ── Desktop sidebar ─────────────────────────────────── */}
       <aside
-        className="hidden md:flex flex-col w-64 border-r"
-        style={{ backgroundColor: '#0a0a0a', borderColor: '#222' }}
+        className="hidden md:flex flex-col w-56 shrink-0 border-r"
+        style={{ backgroundColor: '#111111', borderColor: '#2a2a2a' }}
       >
         {/* Logo */}
-        <div className="p-6 border-b" style={{ borderColor: '#222' }}>
-          <h1 className="text-2xl font-bold text-white">Content OS</h1>
+        <div className="px-6 py-5 border-b" style={{ borderColor: '#2a2a2a' }}>
+          <span className="text-xl font-bold text-white tracking-tight">Content OS</span>
         </div>
 
-        {/* Nav Links */}
-        <nav className="flex-1 p-4 space-y-2">
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 space-y-1">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="flex items-center gap-3 px-4 py-3 rounded transition"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors"
               style={{
                 backgroundColor: isActive(link.href) ? '#3b82f6' : 'transparent',
-                color: isActive(link.href) ? '#fff' : '#9ca3af',
+                color: isActive(link.href) ? '#ffffff' : '#c9cdd4',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive(link.href)) {
+                  e.currentTarget.style.backgroundColor = '#1e1e1e';
+                  e.currentTarget.style.color = '#ffffff';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive(link.href)) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#c9cdd4';
+                }
               }}
             >
-              <span className="text-xl">{link.icon}</span>
-              <span className="font-medium">{link.label}</span>
+              <span className="text-base leading-none">{link.icon}</span>
+              <span>{link.label}</span>
             </Link>
           ))}
         </nav>
 
-        {/* Video Count */}
-        <div className="p-4 border-t" style={{ borderColor: '#222' }}>
-          <p className="text-xs text-gray-500">
-            {videoCount !== null ? `${videoCount} video${videoCount !== 1 ? 's' : ''}` : 'Loading...'}
+        {/* Video count */}
+        <div className="px-6 py-4 border-t" style={{ borderColor: '#2a2a2a' }}>
+          <p className="text-xs" style={{ color: '#6b7280' }}>
+            {videoCount !== null
+              ? `${videoCount} video${videoCount !== 1 ? 's' : ''} logged`
+              : '—'}
           </p>
         </div>
       </aside>
 
-      {/* Mobile Tab Bar */}
-      <div
-        className="md:hidden fixed bottom-0 left-0 right-0 border-t flex justify-around items-center"
-        style={{ backgroundColor: '#141414', borderColor: '#222', height: '60px' }}
+      {/* ── Mobile bottom tab bar ────────────────────────────── */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t"
+        style={{ backgroundColor: '#111111', borderColor: '#2a2a2a', height: '56px' }}
       >
         {navLinks.map((link) => (
           <Link
             key={link.href}
             href={link.href}
-            className="flex flex-col items-center justify-center flex-1 h-full transition"
-            style={{
-              borderTopColor: isActive(link.href) ? '#3b82f6' : 'transparent',
-              borderTopWidth: isActive(link.href) ? '3px' : '0px',
-              color: isActive(link.href) ? '#3b82f6' : '#6b7280',
-            }}
+            className="flex flex-col items-center justify-center flex-1 gap-0.5 text-xs font-medium transition-colors"
+            style={{ color: isActive(link.href) ? '#3b82f6' : '#8b9299' }}
           >
-            <span className="text-xl">{link.icon}</span>
+            <span className="text-lg leading-none">{link.icon}</span>
+            <span>{link.label}</span>
           </Link>
         ))}
-      </div>
-
-      {/* Mobile Padding */}
-      <div className="md:hidden h-16" />
+      </nav>
     </>
   );
 }

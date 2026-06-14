@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Video, Metrics, RetentionShape } from '@/lib/types';
-import { getVideos, getMetricsForVideo, getLatestMetrics } from '@/lib/supabase';
+import { getVideos, getLatestMetrics } from '@/lib/supabase';
 
 interface VideoWithMetrics extends Video {
   latestMetrics: Metrics | null;
@@ -125,39 +125,46 @@ export default async function Page() {
   };
 
   return (
-    <main className="flex-1 overflow-y-auto p-8" style={{ backgroundColor: '#0a0a0a' }}>
-      <div className="max-w-7xl mx-auto md:pb-8">
-        <h1 className="text-3xl font-bold mb-8 text-white">Content OS</h1>
+    <main className="flex-1 overflow-y-auto p-6 md:p-8" style={{ backgroundColor: '#0a0a0a' }}>
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6 text-white">Dashboard</h1>
 
         {/* Summary Cards */}
         {videos.length === 0 ? (
-          <div className="p-8 rounded border text-center" style={{ backgroundColor: '#141414', borderColor: '#222' }}>
-            <p className="text-gray-400 text-lg">No videos yet. Add your first video →</p>
+          <div className="p-10 rounded-lg border text-center" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
+            <p className="text-gray-300 text-lg mb-4">No videos logged yet.</p>
+            <Link
+              href="/library/add"
+              className="inline-block px-5 py-2.5 rounded-md font-semibold text-white text-sm transition hover:opacity-90"
+              style={{ backgroundColor: '#3b82f6' }}
+            >
+              Add your first video →
+            </Link>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {/* Total Videos */}
-              <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#222' }}>
-                <p className="text-gray-400 text-sm mb-2">Total Videos</p>
+              <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
+                <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-2">Total Videos</p>
                 <p className="text-3xl font-bold text-white">{stats.totalVideos}</p>
               </div>
 
               {/* Avg Views */}
-              <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#222' }}>
-                <p className="text-gray-400 text-sm mb-2">Avg Views</p>
+              <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
+                <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-2">Avg Views</p>
                 <p className="text-3xl font-bold text-white">{stats.avgViews.toLocaleString()}</p>
               </div>
 
               {/* Avg Watch Time */}
-              <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#222' }}>
-                <p className="text-gray-400 text-sm mb-2">Avg Watch Time</p>
+              <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
+                <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-2">Avg Watch Time</p>
                 <p className="text-3xl font-bold text-white">{stats.avgWatchTime}s</p>
               </div>
 
               {/* Best Pillar */}
-              <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#222' }}>
-                <p className="text-gray-400 text-sm mb-2">Best Content Pillar</p>
+              <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
+                <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-2">Best Content Pillar</p>
                 <p className="text-3xl font-bold" style={{ color: '#3b82f6' }}>
                   {stats.bestPillar || '—'}
                 </p>
@@ -165,7 +172,7 @@ export default async function Page() {
             </div>
 
             {/* Retention Breakdown */}
-            <div className="p-6 rounded border mb-8" style={{ backgroundColor: '#141414', borderColor: '#222' }}>
+            <div className="p-6 rounded border mb-8" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
               <h2 className="text-lg font-semibold text-white mb-4">Retention Shape Breakdown</h2>
               <div className="flex flex-wrap gap-3">
                 {Object.entries(retentionBreakdown).map(([shape, count]) => (
@@ -181,24 +188,24 @@ export default async function Page() {
             </div>
 
             {/* Recent Videos Table */}
-            <div className="p-6 rounded border mb-8" style={{ backgroundColor: '#141414', borderColor: '#222' }}>
+            <div className="p-6 rounded border mb-8" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
               <h2 className="text-lg font-semibold text-white mb-4">Recent Videos</h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr style={{ borderBottomColor: '#222' }} className="border-b">
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium">Hook</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium">Pillar</th>
-                      <th className="text-right py-3 px-4 text-gray-400 font-medium">Views</th>
-                      <th className="text-right py-3 px-4 text-gray-400 font-medium">Watch Time (s)</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium">Retention Shape</th>
+                    <tr style={{ borderBottomColor: '#2a2a2a' }} className="border-b">
+                      <th className="text-left py-3 px-4 text-gray-300 font-semibold text-xs uppercase tracking-wide">Hook</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-semibold text-xs uppercase tracking-wide">Pillar</th>
+                      <th className="text-right py-3 px-4 text-gray-300 font-semibold text-xs uppercase tracking-wide">Views</th>
+                      <th className="text-right py-3 px-4 text-gray-300 font-semibold text-xs uppercase tracking-wide">Watch Time (s)</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-semibold text-xs uppercase tracking-wide">Retention Shape</th>
                     </tr>
                   </thead>
                   <tbody>
                     {recentVideos.map((video) => (
                       <tr
                         key={video.id}
-                        style={{ borderBottomColor: '#222' }}
+                        style={{ borderBottomColor: '#2a2a2a' }}
                         className="border-b hover:opacity-75 transition"
                       >
                         <td className="py-3 px-4">
@@ -206,11 +213,11 @@ export default async function Page() {
                             {video.hook.substring(0, 50)}...
                           </Link>
                         </td>
-                        <td className="py-3 px-4 text-gray-300">{video.content_pillar}</td>
-                        <td className="py-3 px-4 text-right text-gray-300">
+                        <td className="py-3 px-4 text-gray-100">{video.content_pillar}</td>
+                        <td className="py-3 px-4 text-right text-gray-100">
                           {(video.latestMetrics?.views || 0).toLocaleString()}
                         </td>
-                        <td className="py-3 px-4 text-right text-gray-300">
+                        <td className="py-3 px-4 text-right text-gray-100">
                           {video.latestMetrics?.avg_watch_time_seconds?.toFixed(1) || '—'}
                         </td>
                         <td className="py-3 px-4">
@@ -233,7 +240,7 @@ export default async function Page() {
             </div>
 
             {/* Top 5 by Watch Time */}
-            <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#222' }}>
+            <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
               <h2 className="text-lg font-semibold text-white mb-4">Top 5 by Watch Time</h2>
               <ol className="space-y-3">
                 {topByWatchTime.map((video, idx) => (
@@ -245,7 +252,7 @@ export default async function Page() {
                       <Link href={`/video/${video.id}`} style={{ color: '#3b82f6' }} className="hover:underline font-medium">
                         {video.hook}
                       </Link>
-                      <p className="text-gray-400 text-sm mt-1">
+                      <p className="text-gray-300 text-sm mt-1">
                         {video.latestMetrics?.avg_watch_time_seconds?.toFixed(1) || '0'}s avg watch time
                       </p>
                     </div>
