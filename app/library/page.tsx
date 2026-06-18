@@ -135,16 +135,13 @@ async function LibraryPage({
                         <tr
                           key={video.id}
                           style={{ borderBottomColor: '#222' }}
-                          className="border-b hover:opacity-75 transition cursor-pointer"
-                          onClick={() => {
-                            window.location.href = `/video/${video.id}`;
-                          }}
+                          className="border-b hover:opacity-75 transition"
                         >
                           <td className="py-3 px-4 text-gray-400">{idx + 1}</td>
                           <td className="py-3 px-4">
-                            <span style={{ color: '#3b82f6' }} className="font-medium">
+                            <Link href={`/video/${video.id}`} style={{ color: '#3b82f6' }} className="font-medium hover:underline">
                               {(video.hook || video.title || video.instagram_reel_id || 'Untitled').substring(0, 60)}
-                            </span>
+                            </Link>
                           </td>
                           <td className="py-3 px-4 text-gray-300">{video.content_pillar}</td>
                           <td className="py-3 px-4 text-right text-gray-300">
