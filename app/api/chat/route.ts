@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const contextString = videosWithMetrics
       .map(
         (v) =>
-          `- Hook: "${v.hook}"\n  Pillar: ${v.content_pillar}\n  Transcript: ${v.transcript.substring(0, 500)}${v.transcript.length > 500 ? '...' : ''}\n  Views: ${v.latestMetrics?.views || 0}, Watch Time: ${v.latestMetrics?.avg_watch_time_seconds?.toFixed(1) || '0'}s, Saves: ${v.latestMetrics?.saves || 0}`
+          `- Hook: "${v.hook || v.title || 'Untitled'}"\n  Pillar: ${v.content_pillar || 'Unknown'}\n  Transcript: ${(v.transcript || '').substring(0, 500)}${(v.transcript || '').length > 500 ? '...' : ''}\n  Views: ${v.latestMetrics?.views || 0}, Watch Time: ${v.latestMetrics?.avg_watch_time_seconds?.toFixed(1) || '0'}s, Saves: ${v.latestMetrics?.saves || 0}`
       )
       .join('\n\n');
 

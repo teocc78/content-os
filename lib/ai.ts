@@ -75,7 +75,7 @@ export async function queryContentLibrary(
   const videoContext = relevantVideos
     .map(
       (video) =>
-        `- Title/Hook: "${video.hook}"\n  Pillar: ${video.content_pillar}\n  Transcript preview: ${video.transcript.substring(0, 200)}...`
+        `- Title/Hook: "${video.hook || video.title || 'Untitled'}"\n  Pillar: ${video.content_pillar || 'Unknown'}\n  Transcript preview: ${(video.transcript || '').substring(0, 200)}...`
     )
     .join('\n\n');
 

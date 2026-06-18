@@ -18,6 +18,7 @@ interface RetentionBreakdown {
   early_drop: number;
   rewatch_bump: number;
   cliff: number;
+  unknown: number;
 }
 
 export default async function Page() {
@@ -33,6 +34,7 @@ export default async function Page() {
     early_drop: 0,
     rewatch_bump: 0,
     cliff: 0,
+    unknown: 0,
   };
   let error: string | null = null;
 
@@ -122,6 +124,7 @@ export default async function Page() {
     early_drop: '#ef4444',
     rewatch_bump: '#3b82f6',
     cliff: '#f97316',
+    unknown: '#374151',
   };
 
   return (
@@ -210,7 +213,7 @@ export default async function Page() {
                       >
                         <td className="py-3 px-4">
                           <Link href={`/video/${video.id}`} style={{ color: '#3b82f6' }} className="hover:underline">
-                            {video.hook.substring(0, 50)}...
+                            {video.hook ? video.hook.substring(0, 50) + '...' : video.title || video.instagram_reel_id || 'Untitled'}
                           </Link>
                         </td>
                         <td className="py-3 px-4 text-gray-100">{video.content_pillar}</td>
@@ -250,7 +253,7 @@ export default async function Page() {
                     </span>
                     <div>
                       <Link href={`/video/${video.id}`} style={{ color: '#3b82f6' }} className="hover:underline font-medium">
-                        {video.hook}
+                        {video.hook || video.title || video.instagram_reel_id || 'Untitled'}
                       </Link>
                       <p className="text-gray-300 text-sm mt-1">
                         {video.latestMetrics?.avg_watch_time_seconds?.toFixed(1) || '0'}s avg watch time

@@ -20,13 +20,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const body = await request.json();
 
-    const { hook, transcript, captions, content_pillar, posted_at } = body;
+    const { hook, transcript, on_screen_caption, content_pillar, posted_at } = body;
 
     // Update video record
     const updated = await updateVideo(id, {
       hook,
       transcript,
-      captions,
+      on_screen_caption,
       content_pillar,
       posted_at,
     });

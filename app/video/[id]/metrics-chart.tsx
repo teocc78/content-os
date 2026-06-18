@@ -12,9 +12,9 @@ export function MetricsChart({ metrics }: MetricsChartProps) {
   const chartData = [...metrics]
     .reverse()
     .map((m) => ({
-      date: new Date(m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      date: new Date(m.captured_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       views: m.views,
-      timestamp: new Date(m.date).getTime(),
+      timestamp: new Date(m.captured_at).getTime(),
     }));
 
   return (

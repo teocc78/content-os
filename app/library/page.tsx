@@ -31,7 +31,7 @@ async function LibraryPage({
     );
 
     // Extract unique pillars
-    pillars = Array.from(new Set(videos.map((v) => v.content_pillar))).sort();
+    pillars = Array.from(new Set(videos.map((v) => v.content_pillar).filter((p): p is string => !!p))).sort();
 
     // Apply filters
     const pillarFilter = searchParams.pillar as string | undefined;
@@ -74,6 +74,7 @@ async function LibraryPage({
     early_drop: '#eab308',
     rewatch_bump: '#3b82f6',
     cliff: '#ef4444',
+    unknown: '#6b7280',
   };
 
   return (
@@ -142,7 +143,7 @@ async function LibraryPage({
                           <td className="py-3 px-4 text-gray-400">{idx + 1}</td>
                           <td className="py-3 px-4">
                             <span style={{ color: '#3b82f6' }} className="font-medium">
-                              {video.hook.substring(0, 60)}...
+                              {(video.hook || video.title || video.instagram_reel_id || 'Untitled').substring(0, 60)}
                             </span>
                           </td>
                           <td className="py-3 px-4 text-gray-300">{video.content_pillar}</td>

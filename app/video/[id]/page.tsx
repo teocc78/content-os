@@ -41,6 +41,7 @@ export default async function VideoPage({ params }: VideoPageProps) {
     early_drop: '#eab308',
     rewatch_bump: '#3b82f6',
     cliff: '#ef4444',
+    unknown: '#6b7280',
   };
 
   return (
@@ -71,10 +72,10 @@ export default async function VideoPage({ params }: VideoPageProps) {
             </div>
 
             {/* On-Screen Caption */}
-            {video.captions && (
+            {video.on_screen_caption && (
               <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#222' }}>
                 <p className="text-sm text-gray-400 mb-2">On-Screen Caption</p>
-                <p className="text-white">{video.captions}</p>
+                <p className="text-white">{video.on_screen_caption}</p>
               </div>
             )}
 
@@ -174,20 +175,10 @@ export default async function VideoPage({ params }: VideoPageProps) {
                     {(latestMetrics.retention_shape || 'flat_hold').replace(/_/g, ' ')}
                   </span>
                 </div>
-                <p className="text-gray-400 text-sm mb-4">
-                  Retention: {(latestMetrics.retention * 100).toFixed(1)}%
-                </p>
-
-                {/* Retention Screenshot */}
-                {latestMetrics.retention_screenshot_url && (
-                  <div className="mt-4">
-                    <img
-                      src={latestMetrics.retention_screenshot_url}
-                      alt="Retention graph"
-                      className="w-full rounded border"
-                      style={{ borderColor: '#222' }}
-                    />
-                  </div>
+                {latestMetrics.retention_drop_point_pct != null && (
+                  <p className="text-gray-400 text-sm mb-4">
+                    50% drop point: {latestMetrics.retention_drop_point_pct}% into video
+                  </p>
                 )}
               </div>
             ) : null}
@@ -234,7 +225,7 @@ export default async function VideoPage({ params }: VideoPageProps) {
                 </div>
               ) : (
                 <Link
-                  href={`/grade?hook=${encodeURIComponent(video.hook)}`}
+                  href={`/grade?hook=${encodeURIComponent(video.hook || '')}`}
                   className="inline-block px-4 py-2 rounded font-medium text-white transition hover:opacity-90"
                   style={{ backgroundColor: '#3b82f6' }}
                 >

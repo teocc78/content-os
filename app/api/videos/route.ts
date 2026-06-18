@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const video = await createVideo({
       transcript,
       hook,
-      captions: onScreenCaption || '',
+      on_screen_caption: onScreenCaption || '',
       content_pillar: contentPillar || 'other',
       embedding,
       posted_at: new Date(postedDate).toISOString(),

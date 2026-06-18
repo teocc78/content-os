@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     // Get top 15 videos by watch time
     const topVideos = await getTopVideosByWatchTime(15);
-    const topHooks = topVideos.map((v) => v.hook);
+    const topHooks = topVideos.map((v) => v.hook).filter((h): h is string => !!h);
 
     // Grade the hook
     const gradeResult = await gradeHook(hook, topHooks);
