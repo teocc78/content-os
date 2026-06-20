@@ -1,3 +1,118 @@
+/* ============================================================
+   Content OS — drop-in globals.css for Next.js
+   Replace app/globals.css with this file.
+   Keeps Tailwind directives + adds the full design token layer.
+   ============================================================ */
+
+/* ---- Webfonts ---- */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ---- Color ramp ---- */
+:root {
+  --gray-0:   #ffffff;
+  --gray-50:  #f8fafc;
+  --gray-100: #f1f4f8;
+  --gray-150: #eaeef3;
+  --gray-200: #e3e8ef;
+  --gray-300: #d3dae3;
+  --gray-400: #9aa6b6;
+  --gray-500: #687586;
+  --gray-600: #4d5867;
+  --gray-700: #353f4d;
+  --gray-800: #1f2733;
+  --gray-900: #121821;
+
+  --blue-50:  #eef4ff;
+  --blue-100: #d9e6ff;
+  --blue-200: #b3cdff;
+  --blue-400: #4f86f7;
+  --blue-500: #2563eb;
+  --blue-600: #1d52d4;
+  --blue-700: #1842ad;
+
+  --green-500: #16a34a; --green-600: #128040; --green-50: #e9f7ef;
+  --amber-500: #d08700; --amber-600: #ad6f00; --amber-50: #fbf3df;
+  --red-500:   #dc2626; --red-600:   #bd1b1b; --red-50:   #fdecec;
+  --orange-500:#ea580c; --orange-600:#c4490b; --orange-50:#fdefe6;
+  --violet-500:#7c5cff; --violet-600:#6845e6; --violet-50:#f1edff;
+
+  /* ---- Semantic surfaces ---- */
+  --surface-app:     var(--gray-50);
+  --surface-card:    var(--gray-0);
+  --surface-sunken:  var(--gray-100);
+  --surface-hover:   var(--gray-150);
+
+  /* ---- Text ---- */
+  --text-strong:     var(--gray-900);
+  --text-body:       var(--gray-700);
+  --text-secondary:  var(--gray-500);
+  --text-muted:      var(--gray-400);
+  --text-onaccent:   var(--gray-0);
+  --text-link:       var(--blue-600);
+
+  /* ---- Borders ---- */
+  --border-subtle:   var(--gray-200);
+  --border-default:  var(--gray-300);
+  --border-strong:   var(--gray-400);
+  --border-focus:    var(--blue-500);
+
+  /* ---- Accent ---- */
+  --accent:          var(--blue-500);
+  --accent-hover:    var(--blue-600);
+  --accent-active:   var(--blue-700);
+  --accent-tint:     var(--blue-50);
+  --accent-text:     var(--blue-600);
+
+  /* ---- Status ---- */
+  --positive:        var(--green-500);  --positive-tint: var(--green-50);
+  --caution:         var(--amber-500);  --caution-tint:  var(--amber-50);
+  --critical:        var(--red-500);    --critical-tint: var(--red-50);
+
+  /* ---- Type ---- */
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --weight-regular: 400; --weight-medium: 500; --weight-semibold: 600; --weight-bold: 700;
+
+  /* ---- Radii ---- */
+  --radius-xs: 4px; --radius-sm: 6px; --radius-md: 8px;
+  --radius-lg: 12px; --radius-xl: 16px; --radius-pill: 999px;
+
+  /* ---- Shadows ---- */
+  --shadow-xs: 0 1px 2px rgba(18,24,33,.05);
+  --shadow-sm: 0 1px 3px rgba(18,24,33,.06), 0 1px 2px rgba(18,24,33,.04);
+  --shadow-md: 0 4px 12px rgba(18,24,33,.08), 0 2px 4px rgba(18,24,33,.04);
+  --shadow-focus: 0 0 0 3px rgba(37,99,235,.18);
+
+  /* ---- Layout ---- */
+  --sidebar-width: 232px;
+}
+
+/* ---- Base reset ---- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background-color: var(--surface-app);
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tabular, [class*="metric"], table {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: var(--blue-100);
+  color: var(--gray-900);
+}

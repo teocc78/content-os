@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Video, Metrics, RetentionShape } from '@/lib/types';
 import { getVideos, getLatestMetrics } from '@/lib/supabase';
+import { Badge, RETENTION_MAP } from '@/components/Badge';
 
 interface VideoWithMetrics extends Video {
   latestMetrics: Metrics | null;
@@ -23,36 +24,21 @@ interface RetentionBreakdown {
 
 export default async function Page() {
   let videos: VideoWithMetrics[] = [];
-  let stats: DashboardStats = {
-    totalVideos: 0,
-    avgViews: 0,
-    avgWatchTime: 0,
-    bestPillar: '',
-  };
+  let stats: DashboardStats = { totalVideos: 0, avgViews: 0, avgWatchTime: 0, bestPillar: '' };
   let retentionBreakdown: RetentionBreakdown = {
-    flat_hold: 0,
-    early_drop: 0,
-    rewatch_bump: 0,
-    cliff: 0,
-    unknown: 0,
+    flat_hold: 0, early_drop: 0, rewatch_bump: 0, cliff: 0, unknown: 0,
   };
   let error: string | null = null;
 
   try {
     const allVideos = await getVideos();
-
-    // Fetch metrics for each video
     videos = await Promise.all(
       allVideos.map(async (video) => {
         const latest = await getLatestMetrics(video.id);
-        return {
-          ...video,
-          latestMetrics: latest,
-        };
+        return { ...video, latestMetrics: latest };
       })
     );
 
-    // Calculate stats
     if (videos.length > 0) {
       const viewsWithData = videos.filter((v) => v.latestMetrics?.views);
       const watchTimeData = videos.filter((v) => v.latestMetrics?.avg_watch_time_seconds);
@@ -61,13 +47,11 @@ export default async function Page() {
         viewsWithData.length > 0
           ? viewsWithData.reduce((sum, v) => sum + (v.latestMetrics?.views || 0), 0) / viewsWithData.length
           : 0;
-
       const avgWatchTime =
         watchTimeData.length > 0
           ? watchTimeData.reduce((sum, v) => sum + (v.latestMetrics?.avg_watch_time_seconds || 0), 0) / watchTimeData.length
           : 0;
 
-      // Best pillar by avg views
       const pillarViews: Record<string, number[]> = {};
       viewsWithData.forEach((v) => {
         const pillar = v.content_pillar || 'Unknown';
@@ -78,11 +62,8 @@ export default async function Page() {
       let bestPillar = '';
       let bestAvgViews = 0;
       Object.entries(pillarViews).forEach(([pillar, views]) => {
-        const avgPillarViews = views.reduce((a, b) => a + b, 0) / views.length;
-        if (avgPillarViews > bestAvgViews) {
-          bestAvgViews = avgPillarViews;
-          bestPillar = pillar;
-        }
+        const avg = views.reduce((a, b) => a + b, 0) / views.length;
+        if (avg > bestAvgViews) { bestAvgViews = avg; bestPillar = pillar; }
       });
 
       stats = {
@@ -92,9 +73,8 @@ export default async function Page() {
         bestPillar,
       };
 
-      // Retention breakdown
       videos.forEach((v) => {
-        const shape = (v.latestMetrics?.retention_shape || 'flat_hold') as RetentionShape;
+        const shape = (v.latestMetrics?.retention_shape || 'unknown') as RetentionShape;
         retentionBreakdown[shape]++;
       });
     }
@@ -104,11 +84,12 @@ export default async function Page() {
 
   if (error) {
     return (
-      <main className="min-h-screen p-8" style={{ backgroundColor: '#0a0a0a' }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="p-4 rounded border" style={{ backgroundColor: '#141414', borderColor: '#222', color: '#ef4444' }}>
-            Error: {error}
-          </div>
+      <main className="flex-1 overflow-y-auto p-6 md:p-8">
+        <div
+          className="p-4 rounded-lg border text-sm"
+          style={{ backgroundColor: 'var(--critical-tint)', borderColor: 'var(--critical)', color: 'var(--critical)' }}
+        >
+          Error: {error}
         </div>
       </main>
     );
@@ -119,121 +100,138 @@ export default async function Page() {
     .sort((a, b) => (b.latestMetrics?.avg_watch_time_seconds || 0) - (a.latestMetrics?.avg_watch_time_seconds || 0))
     .slice(0, 5);
 
-  const retentionShapeColors: Record<RetentionShape, string> = {
-    flat_hold: '#6b7280',
-    early_drop: '#ef4444',
-    rewatch_bump: '#3b82f6',
-    cliff: '#f97316',
-    unknown: '#374151',
+  const RETENTION_LABELS: Record<string, string> = {
+    flat_hold: 'Flat Hold',
+    early_drop: 'Early Drop',
+    rewatch_bump: 'Rewatch Bump',
+    cliff: 'Cliff',
+    unknown: 'Unknown',
   };
 
   return (
-    <main className="flex-1 overflow-y-auto p-6 md:p-8" style={{ backgroundColor: '#0a0a0a' }}>
+    <main className="flex-1 overflow-y-auto p-6 md:p-8" style={{ backgroundColor: 'var(--surface-app)' }}>
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6 text-white">Dashboard</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-xl font-semibold" style={{ color: 'var(--text-strong)' }}>
+            Dashboard
+          </h1>
+          <Link
+            href="/library/add"
+            className="px-3 py-1.5 rounded-md text-sm font-medium text-white transition hover:opacity-90"
+            style={{ backgroundColor: 'var(--accent)' }}
+          >
+            + Add Video
+          </Link>
+        </div>
 
-        {/* Summary Cards */}
         {videos.length === 0 ? (
-          <div className="p-10 rounded-lg border text-center" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
-            <p className="text-gray-300 text-lg mb-4">No videos logged yet.</p>
+          <div
+            className="p-12 rounded-xl border text-center"
+            style={{ backgroundColor: 'var(--surface-card)', borderColor: 'var(--border-subtle)' }}
+          >
+            <p className="text-base mb-4" style={{ color: 'var(--text-secondary)' }}>
+              No videos logged yet.
+            </p>
             <Link
               href="/library/add"
-              className="inline-block px-5 py-2.5 rounded-md font-semibold text-white text-sm transition hover:opacity-90"
-              style={{ backgroundColor: '#3b82f6' }}
+              className="inline-block px-4 py-2 rounded-md text-sm font-medium text-white transition hover:opacity-90"
+              style={{ backgroundColor: 'var(--accent)' }}
             >
               Add your first video →
             </Link>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {/* Total Videos */}
-              <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
-                <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-2">Total Videos</p>
-                <p className="text-3xl font-bold text-white">{stats.totalVideos}</p>
-              </div>
-
-              {/* Avg Views */}
-              <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
-                <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-2">Avg Views</p>
-                <p className="text-3xl font-bold text-white">{stats.avgViews.toLocaleString()}</p>
-              </div>
-
-              {/* Avg Watch Time */}
-              <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
-                <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-2">Avg Watch Time</p>
-                <p className="text-3xl font-bold text-white">{stats.avgWatchTime}s</p>
-              </div>
-
-              {/* Best Pillar */}
-              <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
-                <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-2">Best Content Pillar</p>
-                <p className="text-3xl font-bold" style={{ color: '#3b82f6' }}>
-                  {stats.bestPillar || '—'}
-                </p>
-              </div>
+            {/* KPI cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {[
+                { label: 'Total Videos', value: stats.totalVideos.toString() },
+                { label: 'Avg Views', value: stats.avgViews.toLocaleString() },
+                { label: 'Avg Watch Time', value: `${stats.avgWatchTime}s` },
+                { label: 'Best Pillar', value: stats.bestPillar || '—' },
+              ].map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="p-5 rounded-xl border"
+                  style={{ backgroundColor: 'var(--surface-card)', borderColor: 'var(--border-subtle)', boxShadow: 'var(--shadow-xs)' }}
+                >
+                  <p className="text-xs font-medium uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                    {label}
+                  </p>
+                  <p className="text-2xl font-semibold tabular" style={{ color: 'var(--text-strong)', fontFamily: 'var(--font-mono)' }}>
+                    {value}
+                  </p>
+                </div>
+              ))}
             </div>
 
-            {/* Retention Breakdown */}
-            <div className="p-6 rounded border mb-8" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
-              <h2 className="text-lg font-semibold text-white mb-4">Retention Shape Breakdown</h2>
-              <div className="flex flex-wrap gap-3">
+            {/* Retention breakdown */}
+            <div
+              className="p-5 rounded-xl border mb-6"
+              style={{ backgroundColor: 'var(--surface-card)', borderColor: 'var(--border-subtle)', boxShadow: 'var(--shadow-xs)' }}
+            >
+              <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-strong)' }}>
+                Retention Shape Breakdown
+              </h2>
+              <div className="flex flex-wrap gap-2">
                 {Object.entries(retentionBreakdown).map(([shape, count]) => (
-                  <div
-                    key={shape}
-                    className="px-3 py-2 rounded text-white text-sm font-medium"
-                    style={{ backgroundColor: retentionShapeColors[shape as RetentionShape] }}
-                  >
-                    {shape.replace(/_/g, ' ')} <span className="ml-2 font-bold">{count}</span>
+                  <div key={shape} className="flex items-center gap-1.5">
+                    <Badge label={RETENTION_LABELS[shape] || shape} tone={RETENTION_MAP[shape]} />
+                    <span className="text-sm font-semibold tabular" style={{ color: 'var(--text-body)', fontFamily: 'var(--font-mono)' }}>
+                      {count}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Recent Videos Table */}
-            <div className="p-6 rounded border mb-8" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
-              <h2 className="text-lg font-semibold text-white mb-4">Recent Videos</h2>
+            {/* Recent videos */}
+            <div
+              className="rounded-xl border mb-6 overflow-hidden"
+              style={{ backgroundColor: 'var(--surface-card)', borderColor: 'var(--border-subtle)', boxShadow: 'var(--shadow-xs)' }}
+            >
+              <div className="px-5 py-3 border-b" style={{ backgroundColor: 'var(--surface-sunken)', borderColor: 'var(--border-subtle)' }}>
+                <h2 className="text-sm font-semibold" style={{ color: 'var(--text-strong)' }}>Recent Videos</h2>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr style={{ borderBottomColor: '#2a2a2a' }} className="border-b">
-                      <th className="text-left py-3 px-4 text-gray-300 font-semibold text-xs uppercase tracking-wide">Hook</th>
-                      <th className="text-left py-3 px-4 text-gray-300 font-semibold text-xs uppercase tracking-wide">Pillar</th>
-                      <th className="text-right py-3 px-4 text-gray-300 font-semibold text-xs uppercase tracking-wide">Views</th>
-                      <th className="text-right py-3 px-4 text-gray-300 font-semibold text-xs uppercase tracking-wide">Watch Time (s)</th>
-                      <th className="text-left py-3 px-4 text-gray-300 font-semibold text-xs uppercase tracking-wide">Retention Shape</th>
+                    <tr style={{ borderBottomColor: 'var(--border-subtle)' }} className="border-b">
+                      <th className="text-left py-2.5 px-4 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Hook</th>
+                      <th className="text-left py-2.5 px-4 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Pillar</th>
+                      <th className="text-right py-2.5 px-4 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Views</th>
+                      <th className="text-right py-2.5 px-4 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Watch (s)</th>
+                      <th className="text-left py-2.5 px-4 text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Retention</th>
                     </tr>
                   </thead>
                   <tbody>
                     {recentVideos.map((video) => (
                       <tr
                         key={video.id}
-                        style={{ borderBottomColor: '#2a2a2a' }}
-                        className="border-b hover:opacity-75 transition"
+                        style={{ borderBottomColor: 'var(--border-subtle)' }}
+                        className="border-b last:border-0 hover:bg-[var(--surface-hover)] transition-colors"
                       >
                         <td className="py-3 px-4">
-                          <Link href={`/video/${video.id}`} style={{ color: '#3b82f6' }} className="hover:underline">
-                            {video.hook ? video.hook.substring(0, 50) + '...' : video.title || video.instagram_reel_id || 'Untitled'}
+                          <Link
+                            href={`/video/${video.id}`}
+                            className="font-medium hover:underline"
+                            style={{ color: 'var(--accent-text)' }}
+                          >
+                            {(video.hook || video.title || video.instagram_reel_id || 'Untitled').substring(0, 55)}
                           </Link>
                         </td>
-                        <td className="py-3 px-4 text-gray-100">{video.content_pillar}</td>
-                        <td className="py-3 px-4 text-right text-gray-100">
+                        <td className="py-3 px-4" style={{ color: 'var(--text-body)' }}>{video.content_pillar || '—'}</td>
+                        <td className="py-3 px-4 text-right tabular" style={{ color: 'var(--text-body)', fontFamily: 'var(--font-mono)' }}>
                           {(video.latestMetrics?.views || 0).toLocaleString()}
                         </td>
-                        <td className="py-3 px-4 text-right text-gray-100">
+                        <td className="py-3 px-4 text-right tabular" style={{ color: 'var(--text-body)', fontFamily: 'var(--font-mono)' }}>
                           {video.latestMetrics?.avg_watch_time_seconds?.toFixed(1) || '—'}
                         </td>
                         <td className="py-3 px-4">
-                          <span
-                            className="px-2 py-1 rounded text-xs text-white"
-                            style={{
-                              backgroundColor: retentionShapeColors[
-                                (video.latestMetrics?.retention_shape || 'flat_hold') as RetentionShape
-                              ],
-                            }}
-                          >
-                            {(video.latestMetrics?.retention_shape || 'flat_hold').replace(/_/g, ' ')}
-                          </span>
+                          <Badge
+                            label={(video.latestMetrics?.retention_shape || 'unknown').replace(/_/g, ' ')}
+                            tone={RETENTION_MAP[video.latestMetrics?.retention_shape || 'unknown']}
+                          />
                         </td>
                       </tr>
                     ))}
@@ -242,23 +240,38 @@ export default async function Page() {
               </div>
             </div>
 
-            {/* Top 5 by Watch Time */}
-            <div className="p-6 rounded border" style={{ backgroundColor: '#141414', borderColor: '#2a2a2a' }}>
-              <h2 className="text-lg font-semibold text-white mb-4">Top 5 by Watch Time</h2>
-              <ol className="space-y-3">
+            {/* Top 5 by watch time */}
+            <div
+              className="rounded-xl border overflow-hidden"
+              style={{ backgroundColor: 'var(--surface-card)', borderColor: 'var(--border-subtle)', boxShadow: 'var(--shadow-xs)' }}
+            >
+              <div className="px-5 py-3 border-b" style={{ backgroundColor: 'var(--surface-sunken)', borderColor: 'var(--border-subtle)' }}>
+                <h2 className="text-sm font-semibold" style={{ color: 'var(--text-strong)' }}>Top 5 by Watch Time</h2>
+              </div>
+              <ol className="divide-y" style={{ '--tw-divide-opacity': '1' } as React.CSSProperties}>
                 {topByWatchTime.map((video, idx) => (
-                  <li key={video.id} className="flex items-start gap-4">
-                    <span className="text-2xl font-bold" style={{ color: '#3b82f6' }}>
+                  <li key={video.id} className="flex items-center gap-4 px-5 py-3">
+                    <span
+                      className="w-6 text-center text-sm font-semibold tabular shrink-0"
+                      style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+                    >
                       {idx + 1}
                     </span>
-                    <div>
-                      <Link href={`/video/${video.id}`} style={{ color: '#3b82f6' }} className="hover:underline font-medium">
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        href={`/video/${video.id}`}
+                        className="text-sm font-medium hover:underline block truncate"
+                        style={{ color: 'var(--accent-text)' }}
+                      >
                         {video.hook || video.title || video.instagram_reel_id || 'Untitled'}
                       </Link>
-                      <p className="text-gray-300 text-sm mt-1">
-                        {video.latestMetrics?.avg_watch_time_seconds?.toFixed(1) || '0'}s avg watch time
-                      </p>
                     </div>
+                    <span
+                      className="text-sm tabular shrink-0"
+                      style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}
+                    >
+                      {video.latestMetrics?.avg_watch_time_seconds?.toFixed(1) || '0'}s
+                    </span>
                   </li>
                 ))}
               </ol>

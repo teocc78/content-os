@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
+import { Sparkles, TrendingUp, PenLine, Clock, BarChart2, Send } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -10,10 +10,10 @@ interface Message {
 }
 
 const STARTER_CHIPS = [
-  'Which of my hooks had the best watch time?',
-  'What content pillar performs best for saves?',
-  'What do my flat_hold retention videos have in common?',
-  'Compare my health vs wealth content performance',
+  { label: 'Best watch time hooks', icon: TrendingUp },
+  { label: 'Top pillar for saves', icon: BarChart2 },
+  { label: 'Flat hold patterns', icon: Clock },
+  { label: 'Health vs wealth performance', icon: PenLine },
 ];
 
 export default function ChatPage() {
@@ -23,40 +23,28 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSendMessage = async (text: string = input) => {
     if (!text.trim()) return;
-
     setError(null);
     const userMessage = text.trim();
     setInput('');
     setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setLoading(true);
-
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          history: messages,
-        }),
+        body: JSON.stringify({ message: userMessage, history: messages }),
       });
-
       if (!res.ok) throw new Error('Failed to get response');
-
       const data = await res.json();
       setMessages((prev) => [...prev, { role: 'assistant', content: data.response }]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-      // Remove the user message if the API call failed
       setMessages((prev) => prev.slice(0, -1));
     } finally {
       setLoading(false);
@@ -64,33 +52,61 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden" style={{ backgroundColor: '#0a0a0a' }}>
-      {/* Header */}
-      <div className="p-6 border-b" style={{ borderColor: '#222' }}>
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">Content Intelligence</h1>
-          <Link href="/" style={{ color: '#3b82f6' }} className="hover:underline">
-            ← Back
-          </Link>
+    <div className="flex-1 flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--surface-app)' }}>
+      {/* Header band */}
+      <div
+        className="border-b px-6 py-4"
+        style={{ backgroundColor: 'var(--surface-card)', borderColor: 'var(--border-subtle)' }}
+      >
+        <div className="max-w-3xl mx-auto flex items-center gap-3">
+          <div
+            className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
+            style={{ backgroundColor: 'var(--accent-tint)' }}
+          >
+            <Sparkles size={16} style={{ color: 'var(--accent)' }} />
+          </div>
+          <div>
+            <h1 className="text-sm font-semibold" style={{ color: 'var(--text-strong)' }}>
+              Content Intelligence
+            </h1>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              Ask about your content library
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-4xl mx-auto">
+      {/* Chat area */}
+      <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="max-w-3xl mx-auto">
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-96 text-center">
-              <h2 className="text-2xl font-semibold text-white mb-4">Ask about your content</h2>
-              <p className="text-gray-400 mb-8">Get insights on what performs best and patterns in your library</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
-                {STARTER_CHIPS.map((chip) => (
+            <div className="flex flex-col items-center justify-center min-h-80 text-center">
+              <div
+                className="flex items-center justify-center w-12 h-12 rounded-xl mb-4"
+                style={{ backgroundColor: 'var(--accent-tint)' }}
+              >
+                <Sparkles size={22} style={{ color: 'var(--accent)' }} />
+              </div>
+              <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--text-strong)' }}>
+                Ask about your content
+              </h2>
+              <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+                Discover patterns, compare pillars, and find what drives performance.
+              </p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {STARTER_CHIPS.map(({ label, icon: Icon }) => (
                   <button
-                    key={chip}
-                    onClick={() => handleSendMessage(chip)}
-                    className="p-4 rounded border text-left transition hover:border-blue-500"
-                    style={{ backgroundColor: '#141414', borderColor: '#222' }}
+                    key={label}
+                    onClick={() => handleSendMessage(label)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition hover:opacity-80"
+                    style={{
+                      backgroundColor: 'var(--surface-card)',
+                      border: '1px solid var(--border-default)',
+                      color: 'var(--text-body)',
+                    }}
                   >
-                    <p className="text-sm text-gray-300">{chip}</p>
+                    <Icon size={13} style={{ color: 'var(--accent)' }} />
+                    {label}
                   </button>
                 ))}
               </div>
@@ -103,28 +119,27 @@ export default function ChatPage() {
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className="p-4 rounded max-w-2xl"
-                    style={{
-                      backgroundColor: msg.role === 'user' ? '#3b82f6' : '#141414',
-                      borderColor: msg.role === 'user' ? '#3b82f6' : '#222',
-                      color: msg.role === 'user' ? '#fff' : '#e5e7eb',
-                    }}
+                    className="px-4 py-3 rounded-2xl max-w-xl text-sm"
+                    style={
+                      msg.role === 'user'
+                        ? { backgroundColor: 'var(--accent)', color: '#ffffff' }
+                        : { backgroundColor: 'var(--surface-card)', border: '1px solid var(--border-subtle)', color: 'var(--text-body)' }
+                    }
                   >
                     {msg.role === 'assistant' ? (
-                      <div className="prose prose-invert max-w-none text-sm">
+                      <div className="prose max-w-none text-sm">
                         <ReactMarkdown
                           components={{
-                            p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                            p: ({ node, ...props }) => <p className="mb-2 last:mb-0" style={{ color: 'var(--text-body)' }} {...props} />,
                             ul: ({ node, ...props }) => <ul className="list-disc list-inside mb-2" {...props} />,
                             ol: ({ node, ...props }) => <ol className="list-decimal list-inside mb-2" {...props} />,
                             li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-                            strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
-                            em: ({ node, ...props }) => <em className="italic" {...props} />,
+                            strong: ({ node, ...props }) => <strong className="font-semibold" style={{ color: 'var(--text-strong)' }} {...props} />,
                             code: ({ node, inline: inlineCode, ...props }: any) =>
                               inlineCode ? (
-                                <code className="bg-gray-800 px-1 py-0.5 rounded text-xs" {...props} />
+                                <code className="px-1 py-0.5 rounded text-xs" style={{ backgroundColor: 'var(--surface-sunken)', color: 'var(--text-body)' }} {...props} />
                               ) : (
-                                <code className="block bg-gray-800 p-2 rounded text-xs overflow-x-auto" {...props} />
+                                <code className="block p-2 rounded text-xs overflow-x-auto" style={{ backgroundColor: 'var(--surface-sunken)' }} {...props} />
                               ),
                           }}
                         >
@@ -132,7 +147,7 @@ export default function ChatPage() {
                         </ReactMarkdown>
                       </div>
                     ) : (
-                      <p className="text-sm">{msg.content}</p>
+                      <p>{msg.content}</p>
                     )}
                   </div>
                 </div>
@@ -141,10 +156,10 @@ export default function ChatPage() {
               {loading && (
                 <div className="flex justify-start">
                   <div
-                    className="p-4 rounded"
-                    style={{ backgroundColor: '#141414', borderColor: '#222' }}
+                    className="px-4 py-3 rounded-2xl text-sm"
+                    style={{ backgroundColor: 'var(--surface-card)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}
                   >
-                    <p className="text-sm text-gray-400">Searching your content library...</p>
+                    Searching your content library…
                   </div>
                 </div>
               )}
@@ -152,8 +167,8 @@ export default function ChatPage() {
               {error && (
                 <div className="flex justify-center">
                   <div
-                    className="p-4 rounded text-sm"
-                    style={{ backgroundColor: '#141414', borderColor: '#ef4444', color: '#ef4444' }}
+                    className="px-4 py-3 rounded-xl text-sm"
+                    style={{ backgroundColor: 'var(--critical-tint)', color: 'var(--critical)' }}
                   >
                     Error: {error}
                   </div>
@@ -166,32 +181,38 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Input Area */}
-      <div className="border-t p-6" style={{ borderColor: '#222' }}>
-        <div className="max-w-4xl mx-auto">
+      {/* Input area */}
+      <div
+        className="border-t px-6 py-4"
+        style={{ backgroundColor: 'var(--surface-card)', borderColor: 'var(--border-subtle)' }}
+      >
+        <div className="max-w-3xl mx-auto">
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage();
-            }}
-            className="flex gap-3"
+            onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+            className="flex gap-2"
           >
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about your content..."
+              placeholder="Ask about your content…"
               disabled={loading}
-              className="flex-1 px-4 py-3 rounded bg-gray-900 text-white border placeholder-gray-500"
-              style={{ borderColor: '#333' }}
+              className="flex-1 px-4 py-2.5 rounded-full text-sm outline-none"
+              style={{
+                border: '1px solid var(--border-default)',
+                backgroundColor: 'var(--surface-sunken)',
+                color: 'var(--text-body)',
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--border-focus)'; e.currentTarget.style.boxShadow = 'var(--shadow-focus)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.boxShadow = 'none'; }}
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="px-6 py-3 rounded font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-              style={{ backgroundColor: '#3b82f6' }}
+              className="flex items-center justify-center w-10 h-10 rounded-full transition hover:opacity-90 disabled:opacity-40 shrink-0"
+              style={{ backgroundColor: 'var(--accent)' }}
             >
-              Send
+              <Send size={16} color="#ffffff" />
             </button>
           </form>
         </div>
